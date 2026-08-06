@@ -81,9 +81,17 @@ dependencies {
     coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.1.5'
 }
 
-def isWindows = String.valueOf(DefaultNativePlatform.currentOperatingSystem.toFamilyName() == OperatingSystemFamily.WINDOWS)
+// safe default for CI if APP_VERSION_NAME is not supplied
+def APP_VERSION_NAME = project.hasProperty('APP_VERSION_NAME') ? project.property('APP_VERSION_NAME') : '0.0.0'
+
+import java.util.Locale
+def isWindows = String.valueOf(System.getProperty('os.name').toLowerCase(Locale.ENGLISH).contains('win'))
+
 android {
     compileSdkVersion 35
+    buildFeatures {
+        buildConfig = true
+    }
     buildToolsVersion '35.0.0'
     ndkVersion "27.2.12479018"
 
