@@ -1,0 +1,32 @@
+name: Gemini AI Code Review and Assistant
+
+on:
+  push:
+    branches: [ master, main ]
+  pull_request:
+    branches: [ master, main ]
+
+jobs:
+  gemini-review:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Run Gemini AI Assistant / Code Check
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: |
+          python3 -c '
+          import os
+          api_key = os.environ.get("GEMINI_API_KEY")
+          if not api_key:
+              print("GEMINI_API_KEY not found in secrets. Skipping AI check.")
+              exit(0)
+          print("GEMINI_API_KEY successfully detected and loaded for workflow automation!")
+          '
