@@ -1,7 +1,6 @@
 package org.telegram.messenger;
 
 import org.telegram.tgnet.TLRPC;
-
 import java.util.ArrayList;
 
 /**
@@ -27,7 +26,7 @@ public class PrivateChatFilter {
         }
 
         // Check if it's a bot
-        TLRPC.User user = MessagesController.getInstance().getUser(dialogId);
+        TLRPC.User user = MessagesController.getInstance(UserConfig.selectedAccount).getUser(dialogId);
         if (user != null && user.bot) {
             return false; // Hide bots
         }
@@ -52,7 +51,6 @@ public class PrivateChatFilter {
 
     /**
      * Check if user is trying to open a non-private chat
-     * Use this in ChatActivity to block entry
      */
     public static boolean isPrivateChatAllowed(long dialogId) {
         return shouldShowDialog(dialogId);
