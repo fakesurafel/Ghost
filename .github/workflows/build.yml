@@ -27,15 +27,16 @@ jobs:
     - name: Setup Android SDK
       uses: android-actions/setup-android@v3
 
-    - name: Install NDK & CMake
+    - name: Install Android SDK packages, NDK & CMake
       run: |
-        sdkmanager "ndk;25.1.8937393" "cmake;3.22.1"
-        echo "ANDROID_NDK_HOME=$ANDROID_SDK_ROOT/ndk/25.1.8937393" >> $GITHUB_ENV
+        yes | sdkmanager --licenses || true
+        sdkmanager "platforms;android-35" "build-tools;35.0.0" "ndk;27.2.12479018" "cmake;3.22.1"
+        echo "ANDROID_NDK_HOME=$ANDROID_SDK_ROOT/ndk/27.2.12479018" >> $GITHUB_ENV
 
     - name: Create local.properties
       run: |
         echo "sdk.dir=$ANDROID_SDK_ROOT" > local.properties
-        echo "ndk.dir=$ANDROID_SDK_ROOT/ndk/25.1.8937393" >> local.properties
+        echo "ndk.dir=$ANDROID_SDK_ROOT/ndk/27.2.12479018" >> local.properties
 
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
@@ -68,4 +69,3 @@ jobs:
       with:
         name: build-logs
         path: TMessagesProj/build/outputs/logs/
-
