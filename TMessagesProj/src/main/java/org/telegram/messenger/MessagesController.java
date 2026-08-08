@@ -14498,6 +14498,9 @@ public class MessagesController extends BaseController implements NotificationCe
     }
 
     private void completeReadTask(ReadTask task) {
+        if (GhostReadManager.getInstance().shouldBlockReadReceipt()) {
+            return;
+        }
         if (task.replyId != 0 && task.monoForumPeerId == 0) {
             TLRPC.TL_messages_readDiscussion req = new TLRPC.TL_messages_readDiscussion();
             req.msg_id = (int) task.replyId;
@@ -14614,6 +14617,11 @@ public class MessagesController extends BaseController implements NotificationCe
     }
 
     public void markDialogAsRead(long dialogId, int maxPositiveId, int maxNegativeId, int maxDate, boolean popup, long threadId, int countDiff, boolean readNow, int scheduledCount) {
+        if (GhostReadManager.getInstance().shouldBlockReadReceipt()) {
+            // Local read only, skip sending read history to server
+            // We still update local UI state via the rest of the method or handle locally if needed,
+            // but let's check what markDialogAsRead does.
+        }
         boolean createReadTask;
 
         if (threadId != 0) {
