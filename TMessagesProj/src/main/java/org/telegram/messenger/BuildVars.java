@@ -18,6 +18,7 @@ public class BuildVars {
     public static String GOOGLE_AUTH_CLIENT_ID = "";
     public static String APP_VERSION_NAME = "11.6.0";
     public static int APP_VERSION_CODE = 6000;
+    public static String BUILD_VERSION_STRING = "11.6.0";
 
     // GhostGram Custom Credentials
     public static int APP_ID = 30976966;
@@ -25,6 +26,10 @@ public class BuildVars {
 
     public static String SMS_HASH = "O2P2z+/jLJWrzIaG";
     public static String PLAYSTORE_APP_URL = "https://play.google.com/store/apps/details?id=com.ghostgram.app";
+
+    // Security and features
+    public static boolean SUPPORTS_PASSKEYS = true;
+    public static String SAFETYNET_KEY = "";
 
     // You can change these to your own links
     public static String TGX_GITHUB = "https://github.com/TGX-Android/Telegram-X";
@@ -45,6 +50,14 @@ public class BuildVars {
 
     public static boolean isGooglePlayApp() {
         return true;
+    }
+
+    public static boolean useInvoiceBilling() {
+        return false;
+    }
+
+    public static String getSmsHash() {
+        return SMS_HASH;
     }
 
     static {
