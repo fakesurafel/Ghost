@@ -27,6 +27,7 @@ public class BuildVars {
     public static String SMS_HASH = "O2P2z+/jLJWrzIaG";
     public static String PLAYSTORE_APP_URL = "https://play.google.com/store/apps/details?id=com.ghostgram.app";
     public static String HUAWEI_STORE_URL = "https://appgallery.huawei.com/app/C123456789";
+    public static String HUAWEI_APP_ID = "123456789";
 
     // Security and features
     public static boolean SUPPORTS_PASSKEYS = true;
