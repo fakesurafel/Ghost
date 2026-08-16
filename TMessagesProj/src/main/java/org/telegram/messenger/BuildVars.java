@@ -12,13 +12,13 @@ public class BuildVars {
     public static boolean CHECK_UPDATES = false;
     public static boolean NO_SCOPED_STORAGE = true;
 
-    // Additional flags expected by compilation
+    // Additional flags expected by compilation (synced with gradle.properties)
     public static boolean DEBUG_VERSION = false;
     public static boolean IS_BILLING_UNAVAILABLE = false;
     public static String GOOGLE_AUTH_CLIENT_ID = "";
-    public static String APP_VERSION_NAME = "11.6.0";
-    public static int APP_VERSION_CODE = 6000;
-    public static String BUILD_VERSION_STRING = "11.6.0";
+    public static String APP_VERSION_NAME = "12.9.2";
+    public static int APP_VERSION_CODE = 6991;
+    public static String BUILD_VERSION_STRING = "12.9.2";
 
     // GhostGram Custom Credentials
     public static int APP_ID = 30976966;
