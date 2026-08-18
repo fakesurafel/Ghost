@@ -51,21 +51,23 @@ jobs:
         restore-keys: |
           gradle-${{ runner.os }}-
 
-    - name: Build Debug APK
+    - name: Build APKs
       run: ./gradlew assembleDebug --stacktrace
       env:
         GRADLE_OPTS: -Xmx6g -XX:MaxMetaspaceSize=512m
         GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
 
-    - name: Upload APK
+    - name: Upload APKs
       uses: actions/upload-artifact@v4
       with:
-        name: GhostGram-APK
-        path: TMessagesProj/build/outputs/apk/debug/*.apk
+        name: GhostGram-APKs
+        path: |
+          **/build/outputs/apk/debug/*.apk
+          **/build/outputs/apk/**/*.apk
 
     - name: Upload build logs on failure
       if: failure()
       uses: actions/upload-artifact@v4
       with:
         name: build-logs
-        path: TMessagesProj/build/outputs/logs/
+        path: **/build/outputs/logs/
