@@ -345,6 +345,9 @@ public class DialogsAdapter extends RecyclerListView.SelectionAdapter implements
 
         public ItemInternal(int viewType, TLRPC.Dialog dialog) {
             super(viewType, true);
+            if (dialog != null && !PrivateChatFilter.shouldShowDialog(dialog.id)) {
+                dialog = null; // Filter out non-private chats
+            }
             this.dialog = dialog;
             if (dialog != null) {
                 int currentId = dialogsStableIds.get(dialog.id, -1);
