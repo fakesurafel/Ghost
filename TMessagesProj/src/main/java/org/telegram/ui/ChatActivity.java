@@ -171,6 +171,7 @@ import org.telegram.messenger.MessageObject;
 import org.telegram.messenger.MessagePreviewParams;
 import org.telegram.messenger.MessageSuggestionParams;
 import org.telegram.messenger.MessagesController;
+import org.telegram.messenger.PrivateChatFilter;
 import org.telegram.messenger.MessagesStorage;
 import org.telegram.messenger.NotificationCenter;
 import org.telegram.messenger.NotificationsController;
@@ -2716,6 +2717,9 @@ public class ChatActivity extends BaseFragment implements
                 chatMode = MODE_SUGGESTIONS;
                 isSubscriberSuggestions = !ChatObject.canManageMonoForum(currentAccount, currentChat);
             }
+            if (PrivateChatFilter.isPrivateMode()) {
+                return false;
+            }
             dialog_id = -chatId;
             if (ChatObject.isChannel(currentChat)) {
                 if (ChatObject.isNotInChat(currentChat) && !ChatObject.isMonoForum(currentChat) && !isThreadChat() && !isInScheduleMode()) {
@@ -2749,6 +2753,9 @@ public class ChatActivity extends BaseFragment implements
                 } else {
                     return false;
                 }
+            }
+            if (PrivateChatFilter.isPrivateMode() && !PrivateChatFilter.shouldShowDialog(currentAccount, userId)) {
+                return false;
             }
             dialog_id = userId;
             botUser = arguments.getString("botUser");

@@ -18,20 +18,30 @@ public class PrivateChatFilter {
      * @param dialogId The dialog ID
      * @return true if should show, false if should hide
      */
-    public static boolean shouldShowDialog(long dialogId) {
-        // Positive IDs = users (private chats)
-        // Negative IDs = groups/channels
-        if (dialogId < 0) {
-            return false; // Hide groups and channels
-        }
-
-        // Check if it's a bot
-        TLRPC.User user = MessagesController.getInstance(UserConfig.selectedAccount).getUser(dialogId);
-        if (user != null && user.bot) {
-            return false; // Hide bots
-        }
-
+    public static boolean isPrivateMode() {
         return true;
+    }
+
+    public static boolean shouldShowDialog(long dialogId) {
+        return shouldShowDialog(UserConfig.selectedAccount, dialogId);
+    }
+
+    public static boolean shouldShowDialog(int account, long dialogId) {
+        if (DialogObject.isEncryptedDialog(dialogId)) {
+            TLRPC.EncryptedChat encryptedChat = MessagesController.getInstance(account).getEncryptedChat(DialogObject.getEncryptedChatId(dialogId));
+            if (encryptedChat == null) {
+                return false;
+            }
+            dialogId = encryptedChat.user_id;
+        }
+
+        // Positive IDs represent users; negative IDs represent groups and channels.
+        if (dialogId <= 0) {
+            return false;
+        }
+
+        TLRPC.User user = MessagesController.getInstance(account).getUser(dialogId);
+        return user != null && !user.bot && !user.self && !user.deleted;
     }
 
     /**
@@ -53,7 +63,7 @@ public class PrivateChatFilter {
      * Check if user is trying to open a non-private chat
      */
     public static boolean isPrivateChatAllowed(long dialogId) {
-        return shouldShowDialog(dialogId);
+        return isPrivateMode() && shouldShowDialog(dialogId);
     }
 
     /**

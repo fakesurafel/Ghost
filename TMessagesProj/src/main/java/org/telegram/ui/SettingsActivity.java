@@ -73,6 +73,7 @@ import org.telegram.messenger.ChatThemeController;
 import org.telegram.messenger.Emoji;
 import org.telegram.messenger.FileLoader;
 import org.telegram.messenger.FileLog;
+import org.telegram.messenger.GhostReadManager;
 import org.telegram.messenger.ImageLoader;
 import org.telegram.messenger.ImageLocation;
 import org.telegram.messenger.LiteMode;
@@ -691,9 +692,9 @@ public class SettingsActivity extends BaseFragment implements NotificationCenter
         items.add(SettingCell.Factory.of(1, IconBackgroundColors.BLUE.top, IconBackgroundColors.BLUE.bottom, R.drawable.settings_account, getString(R.string.SettingsAccount), getString(R.string.SettingsAccountInfo)));
         items.add(SettingCell.Factory.of(2, IconBackgroundColors.ORANGE.top, IconBackgroundColors.ORANGE.bottom, R.drawable.settings_chat, getString(R.string.SettingsChat), getString(R.string.SettingsChatInfo)));
         items.add(SettingCell.Factory.of(3, IconBackgroundColors.GREEN.top, IconBackgroundColors.GREEN.bottom, R.drawable.settings_privacy, getString(R.string.SettingsPrivacySecurity), getString(R.string.SettingsPrivacySecurityInfo)));
+        items.add(SettingCell.Factory.of(24, 0xFF6F42C1, 0xFF4D2A8C, R.drawable.settings_privacy, getString(R.string.GhostMode), GhostReadManager.getInstance().isGhostModeEnabled() ? getString(R.string.GhostModeOn) : getString(R.string.GhostModeOff)));
         items.add(SettingCell.Factory.of(5, IconBackgroundColors.RED.top, IconBackgroundColors.RED.bottom, R.drawable.settings_sounds, getString(R.string.SettingsNotifications), getString(R.string.SettingsNotificationsInfo)));
         items.add(SettingCell.Factory.of(6, IconBackgroundColors.BLUE_DEEP.top, IconBackgroundColors.BLUE_DEEP.bottom, R.drawable.settings_data, getString(R.string.SettingsData), getString(R.string.SettingsDataInfo)));
-        items.add(SettingCell.Factory.of(7, IconBackgroundColors.BLUE_ALT.top, IconBackgroundColors.BLUE_ALT.bottom, R.drawable.settings_folders, getString(R.string.SettingsFolders), getString(R.string.SettingsFoldersInfo)));
         items.add(SettingCell.Factory.of(8, IconBackgroundColors.CYAN.top, IconBackgroundColors.CYAN.bottom, R.drawable.settings_devices, getString(R.string.SettingsDevices), getString(R.string.SettingsDevicesInfo)));
         items.add(SettingCell.Factory.of(9, IconBackgroundColors.ORANGE_DEEP.top, IconBackgroundColors.ORANGE_DEEP.bottom, R.drawable.settings_power, getString(R.string.SettingsPowerSaving), getString(R.string.SettingsPowerSavingInfo)));
         items.add(SettingCell.Factory.of(10, IconBackgroundColors.PURPLE.top, IconBackgroundColors.PURPLE.bottom, R.drawable.settings_language, getString(R.string.SettingsLanguage), LocaleController.getCurrentLanguageName()));
@@ -703,29 +704,7 @@ public class SettingsActivity extends BaseFragment implements NotificationCenter
         if (!getMessagesController().premiumFeaturesBlocked()) {
             items.add(SettingCell.Factory.of(11, 0xFFB659FF, 0xFF617CFF, R.drawable.settings_premium, getString(R.string.TelegramPremium)));
         }
-        if (getMessagesController().starsPurchaseAvailable()) {
-            StarsController c = StarsController.getInstance(currentAccount);
-            long balance = c.getBalance().amount;
-            items.add(SettingCell.Factory.of(12, 0xFFEFA612, 0xFFE77512, R.drawable.settings_stars, getString(R.string.TelegramStars), null, c.balanceAvailable() && balance > 0 ? StarsIntroActivity.formatStarsAmount(c.getBalance(), 0.85f, ' ') : ""));
-        }
-        StarsController.getInstance(currentAccount, true).getBalance();
-        if (ApplicationLoader.isBetaBuild() || ApplicationLoader.isStandaloneBuild() || ApplicationLoader.isHuaweiStoreBuild() || (StarsController.getInstance(currentAccount, true).balanceAvailable() && (StarsController.getInstance(currentAccount, true).hasTransactions() || StarsController.getInstance(currentAccount, true).getBalance().positive()))) {
-            StarsController c = StarsController.getTonInstance(currentAccount);
-            long balance = c.getBalance().amount;
-            items.add(SettingCell.Factory.of(13, 0xFF1BA4ED, 0xFF1488E1, R.drawable.settings_gram_24, getString(R.string.MyTON), null, c.balanceAvailable() && balance > 0 ? StarsIntroActivity.formatStarsAmount(c.getBalance(), 0.85f, ' ') : ""));
-        }
-
-        TLRPC.TL_attachMenuBots menuBots = MediaDataController.getInstance(UserConfig.selectedAccount).getAttachMenuBots();
-        if (menuBots != null && menuBots.bots != null && !menuBots.bots.isEmpty()) {
-            for (TLRPC.TL_attachMenuBot attachMenuBot : menuBots.bots) {
-                final long WALLET_BOT_ID = 1985737506L;
-                if (attachMenuBot.show_in_side_menu && attachMenuBot.bot_id == WALLET_BOT_ID) {
-                    UItem item = SettingCell.Factory.ofBot(attachMenuBot, 0xFF1BA4ED, 0xFF1488E1, R.drawable.settings_wallet);
-                    item.object = attachMenuBot;
-                    items.add(item);
-                }
-            }
-        }
+        // Ghost Gram intentionally omits Stars, TON, and Wallet from the product surface.
 
         if (!getMessagesController().premiumFeaturesBlocked()) {
             items.add(SettingCell.Factory.of(15, 0xFFF45255, 0xFFDF3955, R.drawable.settings_business, getString(R.string.TelegramBusiness)));
@@ -818,14 +797,17 @@ public class SettingsActivity extends BaseFragment implements NotificationCenter
             case 3:
                 presentSettingFragment(new PrivacySettingsActivity());
                 break;
+            case 24:
+                boolean enabled = !GhostReadManager.getInstance().isGhostModeEnabled();
+                GhostReadManager.getInstance().setGhostModeEnabled(enabled);
+                Toast.makeText(getContext(), getString(enabled ? R.string.GhostModeOn : R.string.GhostModeOff), Toast.LENGTH_SHORT).show();
+                listView.adapter.update(false);
+                break;
             case 5:
                 presentSettingFragment(new NotificationsSettingsActivity());
                 break;
             case 6:
                 presentSettingFragment(new DataSettingsActivity());
-                break;
-            case 7:
-                presentSettingFragment(new FiltersSetupActivity());
                 break;
             case 8:
                 presentSettingFragment(new SessionsActivity(0));
@@ -839,12 +821,6 @@ public class SettingsActivity extends BaseFragment implements NotificationCenter
 
             case 11:
                 presentSettingFragment(new PremiumPreviewFragment("settings"));
-                break;
-            case 12:
-                presentSettingFragment(new StarsIntroActivity());
-                break;
-            case 13:
-                presentSettingFragment(new TONIntroActivity());
                 break;
             case 15:
                 presentSettingFragment(new PremiumPreviewFragment(PremiumPreviewFragment.FEATURES_BUSINESS, "settings"));

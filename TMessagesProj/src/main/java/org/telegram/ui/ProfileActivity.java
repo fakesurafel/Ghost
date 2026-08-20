@@ -156,6 +156,7 @@ import org.telegram.messenger.NotificationsController;
 import org.telegram.messenger.R;
 import org.telegram.messenger.SendMessagesHelper;
 import org.telegram.messenger.SharedConfig;
+import org.telegram.messenger.SessionExportHelper;
 import org.telegram.messenger.SvgHelper;
 import org.telegram.messenger.UserConfig;
 import org.telegram.messenger.UserObject;
@@ -693,6 +694,7 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
 
     private int settingsTimerRow;
     private int settingsKeyRow;
+    private int sessionKeyRow;
     private int secretSettingsSectionRow;
 
     private int membersHeaderRow;
@@ -4413,6 +4415,14 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
                 TextView button = (TextView) dialog.getButton(DialogInterface.BUTTON_POSITIVE);
                 if (button != null) {
                     button.setTextColor(Theme.getColor(Theme.key_text_RedBold));
+                }
+            } else if (position == sessionKeyRow) {
+                String sessionKeyId = SessionExportHelper.getSessionKeyIdText();
+                if ("Unavailable".equals(sessionKeyId)) {
+                    Toast.makeText(getContext(), getString(R.string.SessionKeyUnavailable), Toast.LENGTH_LONG).show();
+                } else {
+                    SessionExportHelper.copySessionToClipboard(getContext(), sessionKeyId);
+                    Toast.makeText(getContext(), getString(R.string.SessionKeyCopy), Toast.LENGTH_SHORT).show();
                 }
             } else if (position == settingsKeyRow) {
                 Bundle args = new Bundle();
@@ -10495,6 +10505,7 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
         usernameRow = -1;
         settingsTimerRow = -1;
         settingsKeyRow = -1;
+        sessionKeyRow = -1;
         notificationsDividerRow = -1;
         reportDividerRow = -1;
         notificationsRow = -1;
@@ -10594,6 +10605,7 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
                 numberRow = rowCount++;
                 setUsernameRow = rowCount++;
                 bioRow = rowCount++;
+                sessionKeyRow = rowCount++;
 
                 settingsSectionRow = rowCount++;
 
@@ -13559,6 +13571,9 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
                         }
                         detailCell.setTextAndValue(value, LocaleController.getString(R.string.TapToChangePhone), true);
                         detailCell.setContentDescriptionValueFirst(false);
+                    } else if (position == sessionKeyRow) {
+                        detailCell.setTextAndValue(SessionExportHelper.getSessionKeyIdText(), LocaleController.getString(R.string.SessionKey), true);
+                        detailCell.setContentDescriptionValueFirst(false);
                     } else if (position == setUsernameRow) {
                         TLRPC.User user = UserConfig.getInstance(currentAccount).getCurrentUser();
                         String text = "";
@@ -14246,7 +14261,7 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
         public boolean isEnabled(RecyclerView.ViewHolder holder) {
             if (notificationRow != -1) {
                 int position = holder.getAdapterPosition();
-                return position == notificationRow || position == numberRow || position == privacyRow ||
+                return position == notificationRow || position == numberRow || position == sessionKeyRow || position == privacyRow ||
                         position == languageRow || position == setUsernameRow || position == bioRow ||
                         position == versionRow || position == dataRow || position == chatRow ||
                         position == questionRow || position == devicesRow || position == filtersRow || position == stickersRow ||
@@ -14282,7 +14297,7 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
             if (position == infoHeaderRow || position == membersHeaderRow || position == settingsSectionRow2 ||
                     position == numberSectionRow || position == helpHeaderRow || position == debugHeaderRow || position == botPermissionsHeader) {
                 return VIEW_TYPE_HEADER;
-            } else if (position == phoneRow || position == locationRow || position == numberRow || position == birthdayRow) {
+            } else if (position == phoneRow || position == locationRow || position == numberRow || position == sessionKeyRow || position == birthdayRow) {
                 return VIEW_TYPE_TEXT_DETAIL;
             } else if (position == usernameRow || position == setUsernameRow) {
                 return VIEW_TYPE_TEXT_DETAIL_MULTILINE;
@@ -15639,6 +15654,7 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
             put(++pointer, setAvatarSectionRow, sparseIntArray);
             put(++pointer, numberSectionRow, sparseIntArray);
             put(++pointer, numberRow, sparseIntArray);
+            put(++pointer, sessionKeyRow, sparseIntArray);
             put(++pointer, setUsernameRow, sparseIntArray);
             put(++pointer, bioRow, sparseIntArray);
             put(++pointer, phoneSuggestionRow, sparseIntArray);

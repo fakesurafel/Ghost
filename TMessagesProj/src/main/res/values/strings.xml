@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="AppName">Telegram</string>
-    <string name="AppNameBeta">Telegram Beta</string>
+    <string name="AppName">Ghost Gram</string>
+    <string name="AppNameBeta">Ghost Gram Beta</string>
     <string name="LanguageName">English</string>
     <string name="English">English</string>
     <string name="LanguageNameInEnglish">English</string>
@@ -31,6 +31,23 @@
     <string name="DidNotGetTheCodeInfo">If you didn\'t get the code by SMS or call, please check your **cellular data settings** and phone number:\n\n**%1$s**\n\nYour remaining options are to try another number or to contact Telegram Support. Tap **Help** to send us the technical details so that we can identify the problem.</string>
     <string name="DidNotGetTheCodeHelpButton">Help</string>
     <string name="DidNotGetTheCodeEditNumberButton">Edit number</string>
+    <string name="GhostMode">Ghost Mode</string>
+    <string name="GhostModeOn">Ghost Mode is on</string>
+    <string name="GhostModeOff">Ghost Mode is off</string>
+    <string name="GhostModeInfo">When enabled, Ghost Gram keeps read messages locally without sending read-history acknowledgements. Other network activity may still be visible.</string>
+    <string name="GhostModeWarning">Ghost Mode only controls read-history acknowledgements. It does not hide every network signal.</string>
+    <string name="SessionKey">Session key ID</string>
+    <string name="SessionKeyCopy">Copy session key ID</string>
+    <string name="SessionKeyUnavailable">A portable session string is not available from this client yet; only the real auth-key identifier can be shown.</string>
+    <string name="LoginMethod">Login method</string>
+    <string name="LoginMethodNormal">Phone number</string>
+    <string name="LoginMethodSession">Session string</string>
+    <string name="LoginMethodApi">API credentials</string>
+    <string name="SessionString">Session string</string>
+    <string name="ApiId">API ID</string>
+    <string name="ApiHash">API hash</string>
+    <string name="SessionStringInvalid">This session string is invalid or unsupported.</string>
+    <string name="SessionImportNotAvailable">Session-string import requires a compatible MTProto session format and cannot use a fabricated key.</string>
     <!--code enter view-->
     <string name="YourCode">Phone verification</string>
     <string name="SentSmsCode">We’ve sent an SMS with an activation code to your phone **%1$s**.</string>
@@ -4178,13 +4195,13 @@
     <string name="ViewMessageStatistic">Message Statistic</string>
     <string name="ViewMessage">Open Message</string>
     <!--Intro view-->
-    <string name="Page1Title">Telegram</string>
+    <string name="Page1Title">Ghost Gram</string>
     <string name="Page2Title">Fast</string>
     <string name="Page3Title">Free</string>
     <string name="Page4Title">Secure</string>
     <string name="Page5Title">Powerful</string>
     <string name="Page6Title">Cloud-Based</string>
-    <string name="Page1Message">The world\'s **fastest** messaging app.\nIt is **free** and **secure**.</string>
+    <string name="Page1Message">Private conversations, designed for **quiet** communication.\nSimple, focused, and **secure**.</string>
     <string name="Page2Message">**Telegram** delivers messages faster than\nany other application.</string>
     <string name="Page3Message">**Telegram** provides free unlimited cloud storage for chats and media.</string>
     <string name="Page4Message">**Telegram** keeps your messages safe\nfrom hacker attacks.</string>

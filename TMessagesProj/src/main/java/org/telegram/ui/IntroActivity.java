@@ -153,7 +153,7 @@ public class IntroActivity extends BaseFragment implements NotificationCenter.No
 
     @Override
     public View createView(Context context) {
-        logoDrawable = context.getResources().getDrawable(R.drawable.telegram_logo).mutate();
+        logoDrawable = context.getResources().getDrawable(R.drawable.ghostgram_logo).mutate();
         logoDrawable.setBounds(0, dp(8.666f), dp(115), dp(35));
         SpannableStringBuilder ssb = new SpannableStringBuilder(LocaleController.getString(R.string.Page1Title));
         ssb.setSpan(new ImageSpan(logoDrawable), 0, ssb.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
@@ -384,7 +384,7 @@ public class IntroActivity extends BaseFragment implements NotificationCenter.No
             }
             startPressed = true;
 
-            presentFragment(new LoginActivity().setIntroView(frameContainerView, startMessagingButton), true);
+            presentFragment(new GhostGramLoginActivity(), true);
             destroyed = true;
         });
 
@@ -413,7 +413,7 @@ public class IntroActivity extends BaseFragment implements NotificationCenter.No
 
                         NotificationCenter.getGlobalInstance().removeObserver(this, id);
                         AndroidUtilities.runOnUIThread(()->{
-                            presentFragment(new LoginActivity().setIntroView(frameContainerView, startMessagingButton), true);
+                            presentFragment(new GhostGramLoginActivity(), true);
                             destroyed = true;
                         }, 100);
                     }

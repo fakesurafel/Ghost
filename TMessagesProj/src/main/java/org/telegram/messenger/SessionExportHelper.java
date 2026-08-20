@@ -4,73 +4,70 @@ import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
 import android.util.Base64;
+
 import org.telegram.tgnet.ConnectionsManager;
-import org.telegram.tgnet.TLRPC;
-import java.io.ByteArrayOutputStream;
 
 /**
- * GhostGram - Session Export Helper
- * Exports the current MTProto session as a string that can be used
- * with other Telegram clients (like Telethon/Pyrogram format).
+ * Ghost Gram session utilities.
+ *
+ * The Android client exposes an auth-key identifier but not the private auth-key
+ * bytes needed to create a Telethon/Pyrogram session string. This helper never
+ * invents credential material and never claims that an identifier is a portable
+ * session string.
  */
-public class SessionExportHelper {
-
-    /**
-     * Export current session to string format
-     */
-    public static String exportSessionString() {
-        try {
-            int currentDc = ConnectionsManager.getInstance(UserConfig.selectedAccount).getCurrentDatacenterId();
-            byte[] authKey = new byte[256]; // 256 bytes for MTProto auth key
-            
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            baos.write(currentDc);
-            baos.write(authKey, 0, 8); // auth_key_id (first 8 bytes)
-            baos.write(authKey); // full auth_key
-            
-            byte[] serverSalt = new byte[8];
-            baos.write(serverSalt);
-            
-            return Base64.encodeToString(baos.toByteArray(), Base64.URL_SAFE | Base64.NO_WRAP);
-        } catch (Exception e) {
-            FileLog.e(e);
-            return null;
-        }
+public final class SessionExportHelper {
+    private SessionExportHelper() {
     }
 
     /**
-     * Copy session string to clipboard and show dialog
+     * A portable session string cannot be exported from the current native
+     * client bridge. Return null rather than returning fabricated bytes.
      */
+    public static String exportSessionString() {
+        return null;
+    }
+
+    public static long getSessionKeyId() {
+        return ConnectionsManager.getInstance(UserConfig.selectedAccount).getCurrentAuthKeyId();
+    }
+
+    public static String getSessionKeyIdText() {
+        long keyId = getSessionKeyId();
+        return keyId == 0 ? "Unavailable" : Long.toUnsignedString(keyId);
+    }
+
     public static void copySessionToClipboard(Context context, String sessionString) {
         if (sessionString == null || sessionString.isEmpty()) {
             return;
         }
         ClipboardManager clipboard = (ClipboardManager) context.getSystemService(Context.CLIPBOARD_SERVICE);
-        ClipData clip = ClipData.newPlainText("GhostGram Session", sessionString);
-        clipboard.setPrimaryClip(clip);
+        if (clipboard != null) {
+            clipboard.setPrimaryClip(ClipData.newPlainText("Ghost Gram session identifier", sessionString));
+        }
     }
 
     /**
-     * Import session from string
+     * Performs format validation only. Importing an external session still
+     * requires a native MTProto import path and therefore is not activated here.
      */
-    public static boolean importSessionString(String sessionString) {
-        if (sessionString == null || sessionString.isEmpty()) {
+    public static boolean isSupportedSessionString(String sessionString) {
+        if (sessionString == null || sessionString.trim().isEmpty()) {
             return false;
         }
         try {
-            byte[] sessionData = Base64.decode(sessionString, Base64.URL_SAFE);
-            return true;
-        } catch (Exception e) {
-            FileLog.e(e);
+            byte[] decoded = Base64.decode(sessionString.trim(), Base64.DEFAULT | Base64.URL_SAFE | Base64.NO_WRAP);
+            return decoded.length >= 32;
+        } catch (IllegalArgumentException ignored) {
             return false;
         }
     }
 
-    /**
-     * Generate a displayable session info for UI
-     */
+    public static boolean importSessionString(String sessionString) {
+        return false;
+    }
+
     public static String getSessionInfo() {
         int dcId = ConnectionsManager.getInstance(UserConfig.selectedAccount).getCurrentDatacenterId();
-        return "DC: " + dcId + "\nSession: " + exportSessionString();
+        return "DC: " + dcId + "\nAuth key ID: " + getSessionKeyIdText();
     }
 }

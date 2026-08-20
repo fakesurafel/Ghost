@@ -14617,11 +14617,6 @@ public class MessagesController extends BaseController implements NotificationCe
     }
 
     public void markDialogAsRead(long dialogId, int maxPositiveId, int maxNegativeId, int maxDate, boolean popup, long threadId, int countDiff, boolean readNow, int scheduledCount) {
-        if (GhostReadManager.getInstance().shouldBlockReadReceipt()) {
-            // Local read only, skip sending read history to server
-            // We still update local UI state via the rest of the method or handle locally if needed,
-            // but let's check what markDialogAsRead does.
-        }
         boolean createReadTask;
 
         if (threadId != 0) {
@@ -22267,6 +22262,9 @@ public class MessagesController extends BaseController implements NotificationCe
                 }
                 for (int a = 0, N = allDialogs.size(); a < N; a++) {
                     final TLRPC.Dialog d = allDialogs.get(a);
+                    if (PrivateChatFilter.isPrivateMode() && !PrivateChatFilter.shouldShowDialog(currentAccount, d.id)) {
+                        continue;
+                    }
                     final boolean isCommunity = d instanceof TLRPC.TL_dialogCommunity;
                     if (d instanceof TLRPC.TL_dialog || isCommunity) {
                         long dialogId = d.id;
@@ -22306,6 +22304,12 @@ public class MessagesController extends BaseController implements NotificationCe
         }
         for (int a = 0, N = allDialogs.size(); a < N; a++) {
             TLRPC.Dialog d = allDialogs.get(a);
+            if (PrivateChatFilter.isPrivateMode() && !PrivateChatFilter.shouldShowDialog(currentAccount, d.id)) {
+                allDialogs.remove(a);
+                a--;
+                N--;
+                continue;
+            }
             if (d instanceof TLRPC.TL_dialog) {
                 ArrayList<MessageObject> messageObjects = dialogMessage.get(d.id);
                 if (messageObjects != null) {
