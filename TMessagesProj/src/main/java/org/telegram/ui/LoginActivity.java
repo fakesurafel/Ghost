@@ -130,6 +130,7 @@ import org.telegram.messenger.CallReceiver;
 import org.telegram.messenger.ContactsController;
 import org.telegram.messenger.Emoji;
 import org.telegram.messenger.FileLog;
+import org.telegram.messenger.GhostGramLoginHelper;
 import org.telegram.messenger.ImageLocation;
 import org.telegram.messenger.LocaleController;
 import org.telegram.messenger.MediaDataController;
@@ -2497,11 +2498,25 @@ public class LoginActivity extends BaseFragment implements NotificationCenter.No
                 });
             }
 
+            if (activityMode == MODE_LOGIN) {
+                TextView apiCredentialsButton = new TextView(context);
+                apiCredentialsButton.setText("Use API credentials");
+                apiCredentialsButton.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 14);
+                apiCredentialsButton.setGravity(Gravity.CENTER);
+                apiCredentialsButton.setTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteBlueText));
+                apiCredentialsButton.setPadding(dp(16), dp(10), dp(16), dp(10));
+                apiCredentialsButton.setBackground(Theme.createSelectorDrawable(getThemedColor(Theme.key_listSelector), 4));
+                addView(apiCredentialsButton, LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, 48, Gravity.CENTER_HORIZONTAL, 32, 4, 32, 0));
+                apiCredentialsButton.setOnClickListener(v -> showApiCredentialsDialog());
+                bottomMargin = Math.max(0, bottomMargin - 48);
+            }
+
             if (bottomMargin > 0 && !AndroidUtilities.isSmallScreen()) {
                 Space bottomSpacer = new Space(context);
                 bottomSpacer.setMinimumHeight(AndroidUtilities.dp(bottomMargin));
                 addView(bottomSpacer, LayoutHelper.createLinear(LayoutHelper.WRAP_CONTENT, LayoutHelper.WRAP_CONTENT));
             }
+
 
             HashMap<String, String> languageMap = new HashMap<>();
 
@@ -2580,6 +2595,56 @@ public class LoginActivity extends BaseFragment implements NotificationCenter.No
             }
 
             loadCountries();
+        }
+
+        private void showApiCredentialsDialog() {
+            if (getParentActivity() == null) {
+                return;
+            }
+
+            LinearLayout container = new LinearLayout(getContext());
+            container.setOrientation(LinearLayout.VERTICAL);
+            container.setPadding(dp(24), 0, dp(24), 0);
+
+            EditText apiIdField = new EditText(getContext());
+            apiIdField.setSingleLine(true);
+            apiIdField.setInputType(InputType.TYPE_CLASS_NUMBER);
+            apiIdField.setHint("API ID");
+            if (GhostGramLoginHelper.hasCustomApiCredentials()) {
+                apiIdField.setText(String.valueOf(GhostGramLoginHelper.getConfiguredApiId()));
+            }
+            container.addView(apiIdField, LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, 52));
+
+            EditText apiHashField = new EditText(getContext());
+            apiHashField.setSingleLine(true);
+            apiHashField.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD);
+            apiHashField.setHint("API Hash (32 hexadecimal characters)");
+            if (GhostGramLoginHelper.hasCustomApiCredentials()) {
+                apiHashField.setText(GhostGramLoginHelper.getConfiguredApiHash());
+            }
+            container.addView(apiHashField, LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, 52));
+
+            new AlertDialog.Builder(getParentActivity())
+                    .setTitle("GhostGram API credentials")
+                    .setMessage("These application credentials are used by the standard phone and OTP login flow. They do not replace your phone number or verification code.")
+                    .setView(container)
+                    .setNegativeButton(getString(R.string.Cancel), null)
+                    .setPositiveButton("Save", (dialog, which) -> {
+                        int apiId;
+                        try {
+                            apiId = Integer.parseInt(apiIdField.getText().toString().trim());
+                        } catch (NumberFormatException e) {
+                            Toast.makeText(getContext(), "Invalid API ID", Toast.LENGTH_SHORT).show();
+                            return;
+                        }
+                        String apiHash = apiHashField.getText().toString().trim();
+                        if (!GhostGramLoginHelper.saveApiCredentials(getContext(), apiId, apiHash)) {
+                            Toast.makeText(getContext(), "API ID or API Hash is invalid", Toast.LENGTH_SHORT).show();
+                            return;
+                        }
+                        Toast.makeText(getContext(), "API credentials saved. Continue with phone and OTP login.", Toast.LENGTH_LONG).show();
+                    })
+                    .show();
         }
 
         private void loadCountries() {
@@ -3155,8 +3220,8 @@ public class LoginActivity extends BaseFragment implements NotificationCenter.No
                 ConnectionsManager.getInstance(currentAccount).cleanup(false);
 
                 TLRPC.TL_auth_sendCode sendCode = new TLRPC.TL_auth_sendCode();
-                sendCode.api_hash = BuildVars.APP_HASH;
-                sendCode.api_id = BuildVars.APP_ID;
+                sendCode.api_hash = GhostGramLoginHelper.getConfiguredApiHash();
+                sendCode.api_id = GhostGramLoginHelper.getConfiguredApiId();
                 sendCode.phone_number = phone;
                 sendCode.settings = settings;
                 req = sendCode;

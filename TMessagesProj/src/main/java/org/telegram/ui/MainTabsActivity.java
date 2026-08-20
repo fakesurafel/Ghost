@@ -39,6 +39,7 @@ import androidx.core.view.WindowInsetsCompat;
 import org.telegram.messenger.AndroidUtilities;
 import org.telegram.messenger.ApplicationLoader;
 import org.telegram.messenger.BuildConfig;
+import org.telegram.messenger.BuildVars;
 import org.telegram.messenger.ContactsController;
 import org.telegram.messenger.DialogObject;
 import org.telegram.messenger.Emoji;
@@ -350,7 +351,11 @@ public class MainTabsActivity extends ViewPagerActivity implements NotificationC
             tabsView.addView(tabs[index]);
             tabsView.setViewVisible(view, true, false);
         }
-        checkUi_callTabVisible(getUserConfig().showCallsTab, false);
+        checkUi_callTabVisible(false, false);
+        if (BuildVars.GHOSTGRAM_DIRECT_CHATS_ONLY) {
+            tabsView.setViewVisible(tabs[INDEX_CONTACTS], false, false);
+            tabsView.setViewVisible(tabs[INDEX_CALLS], false, false);
+        }
 
         selectTab(viewPager.getCurrentPosition(), false);
 
@@ -1093,8 +1098,14 @@ public class MainTabsActivity extends ViewPagerActivity implements NotificationC
 
     private void checkUi_callTabVisible(boolean callTabsVisible, boolean animated) {
         if (tabsView != null) {
-            tabsView.setViewVisible(tabs[INDEX_SETTINGS], !callTabsVisible, animated);
-            tabsView.setViewVisible(tabs[INDEX_CALLS], callTabsVisible, animated);
+            if (BuildVars.GHOSTGRAM_DIRECT_CHATS_ONLY) {
+                tabsView.setViewVisible(tabs[INDEX_SETTINGS], !callTabsVisible, animated);
+                tabsView.setViewVisible(tabs[INDEX_CALLS], false, animated);
+                tabsView.setViewVisible(tabs[INDEX_CONTACTS], false, animated);
+            } else {
+                tabsView.setViewVisible(tabs[INDEX_SETTINGS], !callTabsVisible, animated);
+                tabsView.setViewVisible(tabs[INDEX_CALLS], callTabsVisible, animated);
+            }
         }
     }
 

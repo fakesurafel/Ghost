@@ -40,6 +40,7 @@ import org.telegram.messenger.DialogObject;
 import org.telegram.messenger.FileLog;
 import org.telegram.messenger.LocaleController;
 import org.telegram.messenger.MessagesController;
+import org.telegram.messenger.PrivateChatFilter;
 import org.telegram.messenger.R;
 import org.telegram.messenger.SharedConfig;
 import org.telegram.messenger.UserConfig;
@@ -345,9 +346,6 @@ public class DialogsAdapter extends RecyclerListView.SelectionAdapter implements
 
         public ItemInternal(int viewType, TLRPC.Dialog dialog) {
             super(viewType, true);
-            if (dialog != null && !PrivateChatFilter.shouldShowDialog(dialog.id)) {
-                dialog = null; // Filter out non-private chats
-            }
             this.dialog = dialog;
             if (dialog != null) {
                 int currentId = dialogsStableIds.get(dialog.id, -1);
@@ -1628,6 +1626,9 @@ public class DialogsAdapter extends RecyclerListView.SelectionAdapter implements
             }
         }
 
+        if (dialogsType == 0 && folderId == 0) {
+            array = PrivateChatFilter.filterPrivateChatsOnly(currentAccount, array);
+        }
         dialogsCount = array.size();
         isEmpty = false;
         if (dialogsCount == 0 && parentFragment.isArchive()) {

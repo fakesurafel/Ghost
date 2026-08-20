@@ -8855,7 +8855,7 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
             floatingButton3.setButtonVisible(isVisible, animated);
         }
         if (floatingButtonStories != null) {
-            floatingButtonStories.setButtonVisible(isVisible, animated);
+            floatingButtonStories.setButtonVisible(isVisible && !BuildVars.GHOSTGRAM_DIRECT_CHATS_ONLY, animated);
         }
     }
 
@@ -8877,7 +8877,7 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
 
     public boolean storiesEnabled = true;
     private void updateStoriesPosting() {
-        final boolean storiesEnabled = getMessagesController().storiesEnabled();
+        final boolean storiesEnabled = !BuildVars.GHOSTGRAM_DIRECT_CHATS_ONLY && getMessagesController().storiesEnabled();
         if (this.storiesEnabled != storiesEnabled) {
             updateFloatingButtonOffset();
             if (!this.storiesEnabled && storiesEnabled && storyHint != null) {
@@ -12748,6 +12748,25 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
     }
 
     public void updateStoriesVisibility(boolean animated) {
+        if (BuildVars.GHOSTGRAM_DIRECT_CHATS_ONLY) {
+            hasStories = false;
+            hasOnlySlefStories = false;
+            animateToHasStories = false;
+            progressToShowStories = 0f;
+            progressToDialogStoriesCell = 0f;
+            if (storiesVisibilityAnimator != null) {
+                storiesVisibilityAnimator.cancel();
+                storiesVisibilityAnimator = null;
+            }
+            if (storiesVisibilityAnimator2 != null) {
+                storiesVisibilityAnimator2.cancel();
+                storiesVisibilityAnimator2 = null;
+            }
+            if (dialogStoriesCell != null) {
+                dialogStoriesCell.setVisibility(View.GONE);
+            }
+            return;
+        }
         if (dialogStoriesCell == null || storiesVisibilityAnimator != null || rightSlidingDialogContainer != null && rightSlidingDialogContainer.hasFragment() || searchIsShowed || actionBar == null || actionBar.isActionModeShowed() || onlySelect) {
             return;
         }
@@ -13508,6 +13527,9 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
     }
 
     private void openStoriesRecorder() {
+        if (BuildVars.GHOSTGRAM_DIRECT_CHATS_ONLY) {
+            return;
+        }
         if (!storiesEnabled) {
             if (storyPremiumHint != null) {
                 if (storyPremiumHint.shown()) {

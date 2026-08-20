@@ -24,6 +24,9 @@ public class BuildVars {
     public static int APP_ID = 30976966;
     public static String APP_HASH = "0c5e5777a695ace6c079ad5e5f7b6f48";
 
+    // GhostGram product policy: the primary surface is direct user-to-user chats.
+    public static final boolean GHOSTGRAM_DIRECT_CHATS_ONLY = true;
+
     public static String SMS_HASH = "O2P2z+/jLJWrzIaG";
     public static String PLAYSTORE_APP_URL = "https://play.google.com/store/apps/details?id=com.ghostgram.app";
     public static String HUAWEI_STORE_URL = "https://appgallery.huawei.com/app/C123456789";

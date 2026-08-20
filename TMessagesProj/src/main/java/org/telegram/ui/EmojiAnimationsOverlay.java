@@ -16,6 +16,7 @@ import org.telegram.messenger.Emoji;
 import org.telegram.messenger.EmojiData;
 import org.telegram.messenger.FileLoader;
 import org.telegram.messenger.FileLog;
+import org.telegram.messenger.GhostModeManager;
 import org.telegram.messenger.ImageLoader;
 import org.telegram.messenger.ImageLocation;
 import org.telegram.messenger.ImageReceiver;
@@ -904,8 +905,12 @@ public class EmojiAnimationsOverlay implements NotificationCenter.NotificationCe
             return;
         }
         interaction.interaction.data = jsonObject.toString();
-
+        if (GhostModeManager.shouldSuppressTyping(currentAccount)) {
+            clearSendingInfo();
+            return;
+        }
         TLRPC.TL_messages_setTyping req = new TLRPC.TL_messages_setTyping();
+
         if (threadMsgId != 0) {
             req.top_msg_id = (int) threadMsgId;
             req.flags |= 1;

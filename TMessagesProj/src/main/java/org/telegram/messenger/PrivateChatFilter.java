@@ -1,65 +1,67 @@
 package org.telegram.messenger;
 
 import org.telegram.tgnet.TLRPC;
+
 import java.util.ArrayList;
 
 /**
- * GhostGram - Private Chat Filter
- * Removes groups, channels, bots, and stories from the app.
- * Only allows private 1-on-1 user chats.
+ * GhostGram's direct-chat policy.
+ *
+ * This class is deliberately limited to classification.  It does not mutate
+ * the server dialog list; callers decide whether to omit a row or reject a
+ * navigation target.  A dialog is allowed only when it resolves to a normal
+ * user peer.  Bots, self-chat, groups, channels, stories and folder/service
+ * rows are rejected.
  */
-public class PrivateChatFilter {
-
-    private static final String PREFS_NAME = "ghostgram_config";
-    private static final String KEY_PRIVATE_ONLY = "private_chats_only";
-
-    /**
-     * Check if a dialog should be shown (private chats only)
-     * @param dialogId The dialog ID
-     * @return true if should show, false if should hide
-     */
-    public static boolean shouldShowDialog(long dialogId) {
-        // Positive IDs = users (private chats)
-        // Negative IDs = groups/channels
-        if (dialogId < 0) {
-            return false; // Hide groups and channels
-        }
-
-        // Check if it's a bot
-        TLRPC.User user = MessagesController.getInstance(UserConfig.selectedAccount).getUser(dialogId);
-        if (user != null && user.bot) {
-            return false; // Hide bots
-        }
-
-        return true;
+public final class PrivateChatFilter {
+    private PrivateChatFilter() {
     }
 
-    /**
-     * Filter a list of dialogs to only show private chats
-     */
-    public static ArrayList<TLRPC.Dialog> filterPrivateChatsOnly(ArrayList<TLRPC.Dialog> dialogs) {
-        ArrayList<TLRPC.Dialog> filtered = new ArrayList<>();
-        if (dialogs == null) return filtered;
+    public static boolean shouldShowDialog(int account, TLRPC.Dialog dialog) {
+        if (dialog == null || dialog.id == 0 || dialog.folder_id != 0) {
+            return false;
+        }
+        if (!DialogObject.isUserDialog(dialog.id)) {
+            return false;
+        }
+        if (dialog.id == UserConfig.getInstance(account).getClientUserId()) {
+            return false;
+        }
+        TLRPC.User user = AccountInstance.getInstance(account).getMessagesController().getUser(dialog.id);
+        return user != null && !user.bot && !user.deleted;
+    }
 
+    public static boolean shouldShowDialog(long dialogId) {
+        int account = UserConfig.selectedAccount;
+        if (dialogId <= 0 || dialogId == UserConfig.getInstance(account).getClientUserId()) {
+            return false;
+        }
+        TLRPC.User user = AccountInstance.getInstance(account).getMessagesController().getUser(dialogId);
+        return user != null && !user.bot && !user.deleted;
+    }
+
+    public static ArrayList<TLRPC.Dialog> filterPrivateChatsOnly(int account, ArrayList<TLRPC.Dialog> dialogs) {
+        ArrayList<TLRPC.Dialog> filtered = new ArrayList<>();
+        if (dialogs == null) {
+            return filtered;
+        }
         for (TLRPC.Dialog dialog : dialogs) {
-            if (shouldShowDialog(dialog.id)) {
+            if (shouldShowDialog(account, dialog)) {
                 filtered.add(dialog);
             }
         }
         return filtered;
     }
 
-    /**
-     * Check if user is trying to open a non-private chat
-     */
+    public static ArrayList<TLRPC.Dialog> filterPrivateChatsOnly(ArrayList<TLRPC.Dialog> dialogs) {
+        return filterPrivateChatsOnly(UserConfig.selectedAccount, dialogs);
+    }
+
     public static boolean isPrivateChatAllowed(long dialogId) {
         return shouldShowDialog(dialogId);
     }
 
-    /**
-     * Get error message when trying to access blocked feature
-     */
     public static String getBlockedMessage() {
-        return "GhostGram: Only private chats are allowed.";
+        return "GhostGram allows direct personal chats only.";
     }
 }

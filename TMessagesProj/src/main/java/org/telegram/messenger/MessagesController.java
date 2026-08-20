@@ -11368,7 +11368,7 @@ public class MessagesController extends BaseController implements NotificationCe
     }
 
     public boolean sendTyping(long dialogId, long threadMsgId, int action, String emojicon, int classGuid) {
-        if (GhostModeManager.shouldSuppressTyping()) {
+        if (GhostModeManager.shouldSuppressTyping(currentAccount)) {
             return false;
         }
         if (action < 0 || action >= sendingTypings.length || dialogId == 0) {
@@ -14501,7 +14501,7 @@ public class MessagesController extends BaseController implements NotificationCe
     }
 
     private void completeReadTask(ReadTask task) {
-        if (GhostReadManager.getInstance().shouldBlockReadReceipt()) {
+        if (GhostModeManager.shouldSuppressReadReceipts(currentAccount)) {
             return;
         }
         if (task.replyId != 0 && task.monoForumPeerId == 0) {
@@ -14620,11 +14620,7 @@ public class MessagesController extends BaseController implements NotificationCe
     }
 
     public void markDialogAsRead(long dialogId, int maxPositiveId, int maxNegativeId, int maxDate, boolean popup, long threadId, int countDiff, boolean readNow, int scheduledCount) {
-        if (GhostReadManager.getInstance().shouldBlockReadReceipt()) {
-            // Local read only, skip sending read history to server
-            // We still update local UI state via the rest of the method or handle locally if needed,
-            // but let's check what markDialogAsRead does.
-        }
+        boolean suppressReadReceipt = GhostModeManager.shouldSuppressReadReceipts(currentAccount);
         boolean createReadTask;
 
         if (threadId != 0) {
@@ -14747,7 +14743,7 @@ public class MessagesController extends BaseController implements NotificationCe
             monoForumPeerId = 0;
         }
 
-        if (createReadTask) {
+        if (createReadTask && !suppressReadReceipt) {
             Utilities.stageQueue.postRunnable(() -> {
                 ReadTask currentReadTask;
                 if (threadId != 0) {
